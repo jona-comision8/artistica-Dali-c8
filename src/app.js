@@ -5,6 +5,7 @@ let cookieParser = require('cookie-parser')
 let methodOverride = require('method-override');
 let session = require('express-session');
 let localsCheck = require('./middlewares/localsCheck');
+let categoriesHeader = require('./middlewares/categoriesHeader')
 
 
 /* ENRUTADORES */
@@ -25,6 +26,7 @@ app.use(session({
     saveUninitialized: true
 }))
 app.use(localsCheck)
+app.use(categoriesHeader)
 
 
 /* VIEWS */
