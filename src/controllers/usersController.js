@@ -1,20 +1,18 @@
-const { categories, users, writeUsersJSON } = require('../data/dataBase')
 const { validationResult } = require('express-validator')
 let bcrypt = require('bcryptjs')
+let db = require('../database/models')
 
 
 module.exports = {
     /* Register form */
     register: (req, res) => {
         res.render('register', {
-            categories,
             session: req.session
         })
     },
     /* Login form */
     login: (req, res) => {
         res.render('login', {
-            categories,
             session: req.session
     })
     },
@@ -112,10 +110,18 @@ module.exports = {
     },
     processRegister: (req, res) => {
         let errors = validationResult(req)
-
+        if (req.fileValidatorError) {
+            let image = {
+              param: "image",
+              msg: req.fileValidatorError,
+            };
+            errors.push(image);
+          }
         if (errors.isEmpty()) {
 
-            let lastId = 0;
+            
+
+            /* let lastId = 0;
 
             users.forEach(user => {
                 if(user.id > lastId){
@@ -150,7 +156,7 @@ module.exports = {
             writeUsersJSON(users)
 
             res.redirect('/users/login')
-
+ */
         } else {
             res.render('register', {
                 categories,
