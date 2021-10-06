@@ -31,7 +31,7 @@
                 <select class="form-select" id="specificSizeSelect" name="subcategory">
                   <option selected hidden value="">Subcategorias</option>
                  <% subcategories.forEach(subcategory => { %>
-                    <option value="<%- subcategory%>" <%= locals.old && old.subcategory == subcategory ? "selected" : null %>><%- subcategory %></option>
+                    <option value="<%- subcategory.id%>" <%= locals.old && old.subcategory == subcategory.name ? "selected" : null %>><%- subcategory.name %></option>
                  <% }) %>
                 </select>
                 <% if(locals.errors && errors.subcategory) {%>

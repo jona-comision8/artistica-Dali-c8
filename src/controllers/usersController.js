@@ -17,28 +17,59 @@ module.exports = {
   },
   /* User profile */
   profile: (req, res) => {
-    let user = users.find((user) => user.id === req.session.user.id);
+    /* let user = users.find((user) => user.id === +req.params.id); */
 
-    res.render("userProfile", {
-      categories,
-      user,
-      session: req.session,
+    db.User.findByPk(req.session.user.id, {
+      include: [{ association: "addresses" }],
+    }).then((user) => {
+      res.render("userProfile", {
+        user,
+        session: req.session,
+      });
     });
   },
   profileEdit: (req, res) => {
-    let user = users.find((user) => user.id === +req.params.id);
-
-    res.render("userProfileEdit", {
-      categories,
-      user,
-      session: req.session,
+    /* let user = users.find((user) => user.id === +req.params.id); */
+    
+    db.User.findByPk(req.session.user.id, {
+      include: [{ association: "addresses" }],
+    }).then((user) => {
+      res.render("userProfileEdit", {
+        user,
+        session: req.session,
+      });
     });
   },
   updateProfile: (req, res) => {
     let errors = validationResult(req);
 
     if (errors.isEmpty()) {
-      let user = users.find((user) => user.id === +req.params.id);
+      let { name, last_name, phone, street, number ,postal_code, province, city } = req.body;
+      db.User.update({
+        name,
+        last_name,
+        phone,
+        avatar: req.file ? req.file.filename : req.session.user.avatar
+      }, {
+        where: {
+          id: req.params.id
+        }
+      })
+      .then(() => {
+        db.Address.create({
+          street,
+          city,
+          province,
+          number,
+          postal_code,
+          userId: req.params.id
+        })
+        .then(() => {
+          res.redirect('/users/profile')
+        })
+      })
+
+     /*  let user = users.find((user) => user.id === +req.params.id);
 
       let { name, last_name, tel, address, pc, province, city } = req.body;
 
@@ -57,10 +88,9 @@ module.exports = {
 
       req.session.user = user;
 
-      res.redirect("/users/profile");
+      res.redirect("/users/profile"); */
     } else {
       res.render("userProfileEdit", {
-        categories,
         errors: errors.mapped(),
         old: req.body,
         session: req.session,
@@ -71,33 +101,32 @@ module.exports = {
     let errors = validationResult(req);
 
     if (errors.isEmpty()) {
-        db.User.findOne({
-            where: {
-                email: req.body.email
-            }
-        })
-        .then(user => {
-            req.session.user = {
-                id: user.id,
-                name: user.name,
-                last_name: user.last_name,
-                email: user.email,
-                avatar: user.avatar,
-                rol: user.rol,
-              };
+      db.User.findOne({
+        where: {
+          email: req.body.email,
+        },
+      }).then((user) => {
+        req.session.user = {
+          id: user.id,
+          name: user.name,
+          last_name: user.last_name,
+          email: user.email,
+          avatar: user.avatar,
+          rol: user.rol,
+        };
 
-              if (req.body.remember) {
-                res.cookie("userArtisticaDali", req.session.user, {
-                  expires: new Date(Date.now() + 900000),
-                  httpOnly: true,
-                });
-              }
+        if (req.body.remember) {
+          res.cookie("userArtisticaDali", req.session.user, {
+            expires: new Date(Date.now() + 900000),
+            httpOnly: true,
+          });
+        }
 
-              res.locals.user = req.session.user;
+        res.locals.user = req.session.user;
 
-            res.redirect("/");
-        })
- /*      let user = users.find((user) => user.email === req.body.email);
+        res.redirect("/");
+      });
+      /*      let user = users.find((user) => user.email === req.body.email);
 
       req.session.user = {
         id: user.id,
@@ -138,15 +167,17 @@ module.exports = {
       let { name, last_name, email, pass1 } = req.body;
 
       db.User.create({
-          name, 
-          last_name,
-          email, 
-          pass: bcrypt.hashSync(pass1, 12),
-          avatar : req.file ? req.file.filename : "default-image.png",
-          rol: 0,
-      }).then(() => {
-        res.redirect('/user/login')
-      }).catch(err => console.log(err))
+        name,
+        last_name,
+        email,
+        pass: bcrypt.hashSync(pass1, 12),
+        avatar: req.file ? req.file.filename : "default-image.png",
+        rol: 0,
+      })
+        .then(() => {
+          res.redirect("/users/login");
+        })
+        .catch((err) => console.log(err));
 
       /* let lastId = 0;
 
