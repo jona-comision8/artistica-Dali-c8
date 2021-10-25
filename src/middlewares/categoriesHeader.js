@@ -1,6 +1,6 @@
 let db = require('../database/models')
 module.exports = (req, res, next) => {
-    db.Category.findAll({
+    db.Categories.findAll({
         include: [{
             association: "subcategories"
         }]

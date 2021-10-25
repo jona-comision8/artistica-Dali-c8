@@ -8,7 +8,7 @@
 </div>
     <main class="userProfile">
       <div class="avatar">
-            <img src="/images/userAvatars/<%= user.avatar %>" alt="">
+            <img src="/images/usuarios/<%= user.avatar %>" alt="">
         </div>
         <div class="userProfile-container">
             <div class="userProfile_box">
@@ -19,13 +19,10 @@
             </div>
             <div class="userProfile_box">
                 <h3 class="userProfile_title">Datos de contacto</h3>
-                <% user.addresses.forEach(address => { %>
-                    <p class="userProfile_item">Dirección: <%= address.street && address.number ? address.street + " " + address.number : "------" %>></p>
-                    <p class="userProfile_item">Código postal: <%= address.postal_code ? address.postal_code : "------" %></p>
-                    <p class="userProfile_item">Provincia: <%= address.province ? address.province : "------" %></p>
-                    <p class="userProfile_item">Localidad: <%= address.city ? address.city : "------" %></p>
-                    <hr>
-                <% }) %>
+                <p class="userProfile_item">Dirección: <%= address !== null && address.street ? address.street : "------" %>></p>
+                <p class="userProfile_item">Código postal: <%= address !== null && address.postal_code ? address.postal_code : "------" %></p>
+                <p class="userProfile_item">Provincia: <%= address !== null && address.province ? address.province : "------" %></p>
+                <p class="userProfile_item">Localidad: <%= address !== null && address.city ? address.city : "------" %></p>
             </div>
             <a href="/users/profile/edit/<%= user.id %>" class="btn btn-ad-primary">EDITAR DATOS</a>
         </div> 

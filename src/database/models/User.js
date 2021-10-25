@@ -1,5 +1,5 @@
 module.exports = (sequelize, dataTypes) => {
-    let alias = "User";
+    let alias = "Users";
     let cols = {
         id: {
             type: dataTypes.INTEGER(11).UNSIGNED,
@@ -43,7 +43,7 @@ module.exports = (sequelize, dataTypes) => {
     const User = sequelize.define(alias, cols, config)
 
     User.associate = models => {
-        User.hasMany(models.Address, {
+        User.hasMany(models.Addresses, {
             as: "addresses",
             foreignKey:"userId" 
         })

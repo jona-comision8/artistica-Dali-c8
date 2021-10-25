@@ -6,27 +6,26 @@ const { register,
     processLogin,
     processRegister,
     logout,
-    profileEdit,
-    updateProfile } = require('../controllers/usersController');
-const loginValidator = require('../validations/loginValidator')
-const registerValidator = require('../validations/registerValidator')
-const uploadUserAvatar = require('../middlewares/uploadUserAvatar')
-const userSessionCheck = require('../middlewares/userSessionCheck')
-const userLog = require('../middlewares/userLog')
+    updateProfile,
+    editProfile } = require('../controllers/usersController');
+let loginValidator = require('../validations/loginValidator')    
+let registerValidator = require('../validations/registerValidator');
+let upload = require('../middlewares/uploadAvatar'); 
+let userSession = require('../middlewares/userSession')
 
 /* GET - Register form */
-router.get('/register', userLog,register);
-router.post('/register', uploadUserAvatar.single('avatar'), registerValidator, processRegister);
+router.get('/register', register);
+router.post('/register', upload.single('avatar'), registerValidator,processRegister);
 
 /* GET - Login form */
-router.get('/login', userLog, login);
+router.get('/login', login);
 router.post('/login', loginValidator, processLogin);
-router.get('/logout', userSessionCheck, logout);
+router.get('/logout', logout);
 
 /* GET - User profile */
-router.get('/profile', userSessionCheck,profile)
+router.get('/profile', userSession,profile)
 
-router.get('/profile/edit/:id', userSessionCheck,profileEdit)
-router.put('/profile/edit/:id', uploadUserAvatar.single('avatar'),updateProfile)
+router.get('/profile/edit/:id', editProfile)
+router.put('/profile/edit/:id', upload.single('avatar'),updateProfile)
 
 module.exports = router

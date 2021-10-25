@@ -1,54 +1,34 @@
-const { categories } = require("../data/dataBase");
 const db = require("../database/models");
+const { Op } = require("sequelize");
 
 module.exports = {
   detail: (req, res) => {
-    db.Product.findOne({
+    db.Products.findOne({
       where: {
-        id: req.params.id,
+        id: +req.params.id,
       },
       include: [
         {
-          association: "images",
+          association: "productImages",
         },
       ],
-    })
-      .then((product) => {
-        db.Product.findAll({
-          where: {
-            subcategoryId: product.subcategoryId,
-          },
-          include: [
-            {
-              association: "images",
-            },
-          ],
-        }).then((products) => {
-          res.render("productDetail", {
-            sliderTitle: "Productos relacionados",
-            sliderProducts: products,
-            product,
-            session: req.session,
-          });
+    }).then((product) => {
+      db.Products.findAll({
+        where: {
+          subcategoryId: product.subcategoryId,
+        },
+      }).then((products) => {
+        res.render("productDetail", {
+          sliderTitle: "Productos relacionados",
+          sliderProducts: products,
+          product,
+          session: req.session,
         });
-      })
-      .catch((err) => console.log(err));
-
-    /* let productID = +req.params.id;
-        
-        let product = products.find(product => product.id === productID)
-        let sliderProducts = products.filter(item => item.category === product.category)
-
-        res.render('productDetail', {
-            sliderTitle : "Productos relacionados",
-            sliderProducts,
-            product,
-            categories,
-            session: req.session
-        }) */
+      });
+    });
   },
   category: (req, res) => {
-    db.Category.findOne({
+    db.Categories.findOne({
       where: {
         id: req.params.id,
       },
@@ -60,47 +40,66 @@ module.exports = {
               association: "products",
               include: [
                 {
-                  association: "images",
+                  association: "productImages",
                 },
               ],
             },
           ],
         },
       ],
-    }).then((category) => {
-      let subcategories = category.subcategories;
-      let products = [];
-      subcategories.forEach((subcategory) => {
-        subcategory.products.forEach((product) => products.push(product));
-      });
-      res.render("categories", {
-        category,
-        products,
-        session: req.session,
-      });
-    });
-
-    /* Busco la categoría solicitada */
-    /*   let category = categories.find(category => {
-            return category.id === +req.params.id
-        }) */
-    /* Busco los productos que correspondan a esa categoría */
-    //let categoryProducts = products.filter(product => +product.category === +req.params.id)
-
-    /* Busco las subcategorias que corresponden a la categoria seleccionada */
-    /*   let subCategories = [];
-        categoryProducts.forEach(product => {
-            if(!subCategories.includes(product.subcategory)){
-                subCategories.push(product.subcategory)
-            }
+    })
+      .then((category) => {
+        let subcategories = category.subcategories;
+        let products = [];
+        subcategories.forEach((subcategory) => {
+          subcategory.products.forEach((product) => products.push(product));
         });
-
-        res.render('categories', {
+        res.render("categories", {
+          category,
+          products,
+          session: req.session,
+        });
+      })
+      .catch((err) => console.log(err));
+  },
+  subcategory: (req, res) => {
+    db.Subcategories.findByPk(req.params.id, {
+      include: [
+        {
+          association: "products",
+          include: [
+            {
+              association: "productImages",
+            },
+          ],
+        },
+      ],
+    })
+      .then((subcategory) => {
+        db.Categories.findByPk(subcategory.categoryId, {
+          include: [{ association: "subcategories" }],
+        }).then((category) =>
+          res.render("subcategory", {
             category,
-            products: categoryProducts,
-            subCategories,
-            categories,
-            session: req.session
-        }) */
+            products: subcategory.products,
+            session: req.session,
+          })
+        );
+      })
+      .catch((err) => console.log(err));
+  },
+  search: (req, res) => {
+      db.Products.findAll({
+          where: {
+              name: {
+                  [Op.like]: `%${req.query.search}`
+              }
+          },
+          include: [{association: "productImages"}]
+      }).then(result => res.render('searchResult', {
+          result,
+          session: req.session,
+          search: req.query.search
+      }))
   },
 };

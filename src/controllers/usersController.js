@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
-let bcrypt = require("bcryptjs");
-let db = require("../database/models");
+const bcrypt = require("bcryptjs");
+const db = require("../database/models");
 
 module.exports = {
   /* Register form */
@@ -17,78 +17,65 @@ module.exports = {
   },
   /* User profile */
   profile: (req, res) => {
-    /* let user = users.find((user) => user.id === +req.params.id); */
-
-    db.User.findByPk(req.session.user.id, {
-      include: [{ association: "addresses" }],
-    }).then((user) => {
-      res.render("userProfile", {
-        user,
-        session: req.session,
+    db.Users.findByPk(req.session.user.id).then((user) => {
+      db.Addresses.findOne({
+        where: {
+          userId: user.id,
+        },
+      }).then((address) => {
+        res.render("userProfile", {
+          session: req.session,
+          user,
+          address,
+        });
       });
     });
   },
-  profileEdit: (req, res) => {
-    /* let user = users.find((user) => user.id === +req.params.id); */
-    
-    db.User.findByPk(req.session.user.id, {
-      include: [{ association: "addresses" }],
-    }).then((user) => {
-      res.render("userProfileEdit", {
-        user,
-        session: req.session,
+  /* User profile edit form */
+  editProfile: (req, res) => {
+    db.Users.findByPk(req.params.id).then((user) => {
+      db.Addresses.findOne({
+        where: {
+          userId: user.id,
+        },
+      }).then((address) => {
+        res.render("userProfileEdit", {
+          user,
+          session: req.session,
+          address
+        });
       });
     });
   },
+  /* User profile update method */
   updateProfile: (req, res) => {
     let errors = validationResult(req);
 
     if (errors.isEmpty()) {
-      let { name, last_name, phone, street, number ,postal_code, province, city } = req.body;
-      db.User.update({
-        name,
-        last_name,
-        phone,
-        avatar: req.file ? req.file.filename : req.session.user.avatar
-      }, {
-        where: {
-          id: req.params.id
-        }
-      })
-      .then(() => {
-        db.Address.create({
-          street,
-          city,
-          province,
-          number,
-          postal_code,
-          userId: req.params.id
-        })
-        .then(() => {
-          res.redirect('/users/profile')
-        })
-      })
-
-     /*  let user = users.find((user) => user.id === +req.params.id);
-
       let { name, last_name, tel, address, pc, province, city } = req.body;
-
-      user.name = name;
-      user.last_name = last_name;
-      user.tel = tel;
-      user.address = address;
-      user.pc = pc;
-      user.province = province;
-      user.city = city;
-      user.avatar = req.file ? req.file.filename : user.avatar;
-
-      writeUsersJSON(users);
-
-      delete user.pass;
-
-      req.session.user = user;
-
-      res.redirect("/users/profile"); */
+      db.Users.update(
+        {
+          name,
+          last_name,
+          phone: tel,
+          avatar: req.file && req.file.filename,
+        },
+        {
+          where: {
+            id: req.params.id,
+          },
+        }
+      ).then((result) => {
+        db.Addresses.create({
+          street: address,
+          city: city,
+          province: province,
+          postal_code: pc,
+          userId: req.params.id,
+        }).then((result) => {
+          res.redirect("/users/profile");
+        });
+      });
     } else {
       res.render("userProfileEdit", {
         errors: errors.mapped(),
@@ -97,11 +84,12 @@ module.exports = {
       });
     }
   },
+  /* User process login */
   processLogin: (req, res) => {
     let errors = validationResult(req);
 
     if (errors.isEmpty()) {
-      db.User.findOne({
+      db.Users.findOne({
         where: {
           email: req.body.email,
         },
@@ -119,34 +107,14 @@ module.exports = {
           res.cookie("userArtisticaDali", req.session.user, {
             expires: new Date(Date.now() + 900000),
             httpOnly: true,
+            secure: true,
           });
         }
 
-        res.locals.user = req.session.user;
+        res.locals.user = req.session.user; 
 
         res.redirect("/");
       });
-      /*      let user = users.find((user) => user.email === req.body.email);
-
-      req.session.user = {
-        id: user.id,
-        name: user.name,
-        last_name: user.last_name,
-        email: user.email,
-        avatar: user.avatar,
-        rol: user.rol,
-      };
-
-      if (req.body.remember) {
-        res.cookie("userArtisticaDali", req.session.user, {
-          expires: new Date(Date.now() + 900000),
-          httpOnly: true,
-        });
-      }
-
-      res.locals.user = req.session.user;
-
-      res.redirect("/"); */
     } else {
       res.render("login", {
         errors: errors.mapped(),
@@ -154,6 +122,7 @@ module.exports = {
       });
     }
   },
+  /* User process register */
   processRegister: (req, res) => {
     let errors = validationResult(req);
     if (req.fileValidatorError) {
@@ -166,55 +135,16 @@ module.exports = {
     if (errors.isEmpty()) {
       let { name, last_name, email, pass1 } = req.body;
 
-      db.User.create({
+      db.Users.create({
         name,
         last_name,
         email,
-        pass: bcrypt.hashSync(pass1, 12),
+        pass: bcrypt.hashSync(pass1, 10),
         avatar: req.file ? req.file.filename : "default-image.png",
         rol: 0,
-      })
-        .then(() => {
-          res.redirect("/users/login");
-        })
-        .catch((err) => console.log(err));
-
-      /* let lastId = 0;
-
-            users.forEach(user => {
-                if(user.id > lastId){
-                    lastId = user.id
-                }
-            }) 
-
-            let {
-                name, 
-                last_name,
-                email, 
-                pass1
-            } = req.body
-
-            let newUser = {
-                id : lastId + 1,
-                name,
-                last_name,
-                email,
-                pass : bcrypt.hashSync(pass1, 12),
-                avatar : req.file ? req.file.filename : "default-image.png",
-                rol: "ROL_USER",
-                tel: "",
-                address: "",
-                pc: "",
-                province: "",
-                city:""
-            }
-
-            users.push(newUser)
-
-            writeUsersJSON(users)
-
-            res.redirect('/users/login')
- */
+      }).then(() => {
+        res.redirect("/users/login");
+      });
     } else {
       res.render("register", {
         errors: errors.mapped(),
@@ -223,12 +153,12 @@ module.exports = {
       });
     }
   },
+  /* User logout account */
   logout: (req, res) => {
     req.session.destroy();
     if (req.cookies.userArtisticaDali) {
       res.cookie("userArtisticaDali", "", { maxAge: -1 });
     }
-
-    res.redirect("/");
+    return res.redirect("/");
   },
 };

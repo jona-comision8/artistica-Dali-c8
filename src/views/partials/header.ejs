@@ -20,18 +20,12 @@
     
     <!-- Lista con los elementos del menú (categorías) -->
     <ul class="menu">
-        <li class="dropdown-menu" onclick="dropSubCategoryMenu(`school`)">
-            Escolar
-            <i class="fas fa-chevron-down" ></i>
-        </li>
-        <li class="dropdown-menu" onclick="dropSubCategoryMenu(`art`)">
-            Artística
-            <i class="fas fa-chevron-down" ></i>
-        </li>
-        <li class="dropdown-menu" onclick="dropSubCategoryMenu(`office`)">
-            Oficina
-            <i class="fas fa-chevron-down" ></i>
-        </li>
+        <% locals.categories.forEach(category => { %>
+            <li class="dropdown-menu" onclick="dropSubCategoryMenu(`<%- category.name %>`)">
+                <%- category.name %> 
+                <i class="fas fa-chevron-down" ></i>
+            </li>
+        <% }) %>
         <li><a href="#contacto">Contacto</a></li>
     </ul>
 </nav> 
@@ -41,7 +35,7 @@
 <!-- Lista con los elementos del menú (categorías) -->
     <ul class="menu">
         <% locals.categories.forEach(category => { %>
-            <li class="dropdown-menu" onclick="dropSubCategoryMenu(`school`)">
+            <li class="dropdown-menu" onclick="dropSubCategoryMenu(`<%- category.name %>`)">
                 <%- category.name %> 
                 <i class="fas fa-chevron-down" ></i>
             </li>
@@ -87,9 +81,9 @@
 <nav class="nav_menu">        
 <!-- Buscador mobile -->
 
-<form action="#" class="search-form-mobile" id="search">
+<form action="/products/search" class="search-form-mobile" id="search">
     <div class="search-bar">
-        <input type="search" name="busqueda" id="" placeholder="Buscar">
+        <input type="search" name="search" id="" placeholder="Buscar">
         <button type="submit"><i class="fas fa-search"></i></button>
     </div>
 </form>
@@ -97,16 +91,21 @@
 <!-- Subcategorias desplegables -->
 
 <% locals.categories.forEach(category => { %>
-    <div class="subcategory_menu" id="<%- category.code %>">
+    <div class="subcategory_menu" id="<%- category.name %>">
         <a href="/products/category/<%- category.id%>"><div class="subcategory_header"><h3><%- category.name.toUpperCase() %></h3><img src="/images/close.png" onclick="closeWindow()" alt=""></div></a>
         <ul>
-            <% category.subcategories.forEach(subcategory => { %>
-                <li><%= subcategory.name %> </li>
-            <% }) %>
+           <% category.subcategories.forEach(subcategory => { %>
+                <li><a href="/products/subcategory/<%- subcategory.id %>"><%- subcategory.name%></a></li>            
+           <% }) %>
         </ul>
     </div>
     <% }) %>
-
-
 </header>
+<% if (typeof session.user != "undefined") { %>
+    <% if (session.user.rol === 1) { %>
+        <div class="menu-user-admin">
+            <a href="/admin/index">Administrar sitio</a>
+        </div>
+    <% } %>
+<% } %>
 

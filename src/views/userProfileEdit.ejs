@@ -26,16 +26,13 @@
                 <input type="email" name="email" placeholder="Ingresá tu email" readonly value="<%= user.email %>">
             </div>
             <div class="form-ad-input">
-                <input type="text" name="phone" placeholder="Ingresá tu teléfono" value="<%= user.phone ? user.phone : "" %>">
+                <input type="text" name="tel" placeholder="Ingresá tu teléfono" value="<%= user.phone ? user.phone : "" %>">
             </div>
             <div class="form-ad-input">
-                <input type="text" name="street" placeholder="Calle" value="<%= user.addresses[0]?.street ? user.addresses[0].street : "" %>">
+                <input type="text" name="address" placeholder="Domicilio" value="<%= address !== null && address.street ? address.street : "" %>">
             </div>
             <div class="form-ad-input">
-                <input type="number" name="number" placeholder="Número" value="<%= user.addresses[0]?.number ? user.addresses[0].number : "" %>">
-            </div>
-            <div class="form-ad-input">
-                <input type="text" name="postal_code" placeholder="Código postal" value="<%= user.addresses[0]?.postal_code ? user.addresses[0].postal_code : "" %>">
+                <input type="text" name="pc" placeholder="Código postal" value="<%= address !== null && address.postal_code ? address.postal_code : "" %>">
             </div>
             <div class="form-ad-input">
                 <select name="province" id="">
@@ -50,6 +47,9 @@
             <div class="input-file">
                 <p>Cambiar foto de perfil</p>
                 <input type="file" name="avatar">
+                <% if (locals.errors && errors.image) { %>
+                    <small class="text-danger"><%= errors.image.msg %> </small>
+                <% } %>
             </div>
           
             <button type="submit" class="btn btn-ad-primary">

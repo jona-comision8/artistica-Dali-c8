@@ -1,55 +1,49 @@
-const { check, body } = require('express-validator')
+const { check, body } = require('express-validator');
+//const { users } = require('../data/dataBase')
 const db = require('../database/models')
 
 module.exports = [
     check('name')
     .notEmpty()
-    .withMessage('Debes escribir un email'),
+    .withMessage('El nombre es requerido'),
 
     check('last_name')
     .notEmpty()
-    .withMessage('Debes escribir un email'),
+    .withMessage('El apellido es requerido'),
 
     check('email')
-    .notEmpty()
-    .withMessage('Debes escribir un email').bail()
     .isEmail()
-    .withMessage('Debes escribir un email válido'),
+    .withMessage('Debes ingresar un email válido'),
 
-    body('email')
-    .custom(value => {
-        return db.User.findOne({
-            where: {
+    body('email').custom(value => {
+      /*   let user = users.filter(user=>{ 
+            return user.email == value 
+        }) */
+        return db.Users.findOne({
+            where : {
                 email : value
             }
         })
         .then(user => {
             if(user){
-                return Promise.reject("El email ya está registrado")
+                return Promise.reject('Este email ya está registrado')
             }
         })
-        
-    /* let user = users.find(user => user.email === value) */
-      /*   if(user === undefined){
-            return true
-        }else{
-            return false
-        } */
     }),
 
     check('pass1')
     .notEmpty()
     .withMessage('Debes escribir tu contraseña')
     .isLength({
-        min: 6
+        min: 6,
+        max: 12
     })
-    .withMessage('La contraseña debe tener como mínimo 6 caracteres'),
+    .withMessage('La contraseña debe tener entre 6 y 12 caracteres'),
 
-    body('pass2')
-    .custom((value, {req}) => value !== req.body.pass1 ? false : true)
+    body('pass2').custom((value, {req}) => value !== req.body.pass1 ? false : true)
     .withMessage('Las contraseñas no coinciden'),
 
     check('terms')
     .isString('on')
-    .withMessage('Debes aceptar los términos y condiciones')
+    .withMessage('Debes aceptar las bases y condiciones')
 ]
