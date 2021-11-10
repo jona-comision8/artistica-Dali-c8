@@ -83,8 +83,6 @@ module.exports = {
       });
     } else {
       res.render("admin/products/adminProductCreateForm", {
-        subcategories,
-        categories,
         errors: errors.mapped(),
         old: req.body,
         session: req.session,
