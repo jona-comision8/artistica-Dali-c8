@@ -29,11 +29,9 @@ module.exports = {
       db.Categories.create({
         name: req.body.name,
         banner: req.file ? req.file.filename : "default-image.png",
-      })
-        .then((result) => {
-          res.redirect("/admin/categories");
-        })
-        .catch((error) => console.log(error));
+      }).then((result) => {
+        res.redirect("/admin/categories");
+      }).catch(error => console.log(error))
     } else {
       res.render("adminProductCreateForm", {
         errors: errors.mapped(),

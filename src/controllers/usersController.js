@@ -155,7 +155,7 @@ module.exports = {
   },
   /* User logout account */
   logout: (req, res) => {
-    req.session.destroy();
+    req.session = null
     if (req.cookies.userArtisticaDali) {
       res.cookie("userArtisticaDali", "", { maxAge: -1 });
     }

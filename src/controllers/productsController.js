@@ -1,5 +1,8 @@
 const db = require("../database/models");
 const { Op } = require("sequelize");
+let axios = require('axios')
+
+const BASE_URL = "http://localhost:3000/api";
 
 module.exports = {
   detail: (req, res) => {
@@ -23,6 +26,7 @@ module.exports = {
           sliderProducts: products,
           product,
           session: req.session,
+          user: req.session.user?.id || null,
         });
       });
     });
@@ -51,6 +55,7 @@ module.exports = {
       .then((category) => {
         let subcategories = category.subcategories;
         let products = [];
+
         subcategories.forEach((subcategory) => {
           subcategory.products.forEach((product) => products.push(product));
         });
@@ -58,6 +63,7 @@ module.exports = {
           category,
           products,
           session: req.session,
+          user: req.session.user?.id || null,
         });
       })
       .catch((err) => console.log(err));
@@ -83,6 +89,7 @@ module.exports = {
             category,
             products: subcategory.products,
             session: req.session,
+            user: req.session.user?.id || null,
           })
         );
       })
@@ -102,4 +109,26 @@ module.exports = {
           search: req.query.search
       }))
   },
+  cart: (req, res) => {
+    let user = req.session.user.id
+    axios({
+      method: 'get',
+      url: `http://localhost:3000/api/cart/${user}`,
+    })
+    .then(response =>{
+      let products = response.data.data?.order_items.map(item => {
+        return {
+          ...item.products,
+          quantity: item.quantity
+        }
+      })
+      res.render('productCart', {
+        session: req.session,
+        products: products !== undefined ? products : [],
+        user: req.session.user?.id || null,
+      })}
+      
+    )
+    .catch(error => res.send(error))
+  }
 };
